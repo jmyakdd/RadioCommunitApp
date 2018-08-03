@@ -76,6 +76,7 @@ public class Radio1Service extends Service {
             @Override
             public void run() {
                 try {
+
                     socket = new Socket("192.168.2.173", 8002);
                     inputStream = socket.getInputStream();
                     outputStream = socket.getOutputStream();
@@ -83,7 +84,7 @@ public class Radio1Service extends Service {
 
                     receiver = new Receiver(inputStream, handler);
                     receiver.start();
-                    startConnect();
+//                    startConnect();
                 } catch (IOException e) {
                     Log.e("test", "socket connect fail");
                     e.printStackTrace();

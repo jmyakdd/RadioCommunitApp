@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -16,11 +18,14 @@ public class Receiver extends Thread {
     public static Boolean isStartReceive = false;
     public byte[] data = new byte[64];
     private Handler handler = null;
+    private BufferedReader bf;
+    private DataInputStream dataInputStream;
 
     public Receiver(InputStream inputStream, Handler handler) {
         super();
         this.inputStream = inputStream;
         this.handler = handler;
+        dataInputStream = new DataInputStream(inputStream);
     }
 
     @Override
@@ -31,15 +36,16 @@ public class Receiver extends Thread {
 
     @Override
     public void run() {
-        while (isStartReceive) {
-            try {
-                inputStream.read(data);
-                analyticalData(data);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
         super.run();
+        try {
+            while (dataInputStream.read(data) != -1) {
+                Log.e("test", "test");
+                analyticalData(data);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("test", "test");
+        }
     }
 
     public void analyticalData(byte[] data) {
