@@ -11,7 +11,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:padding="10dp"
+        android:visibility="gone"
         android:text="尚未连接电台" />
 
+    <Button
+        android:id="@+id/radioBaseInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取电台基本信息" />
 
+    <Button
+        android:id="@+id/playTipVoice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="播放提示音" />
+
+    <Button
+        android:id="@+id/getSignalingInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取当前信道" />
 </LinearLayout>

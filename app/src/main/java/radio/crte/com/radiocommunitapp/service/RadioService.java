@@ -8,22 +8,13 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-
-import radio.crte.com.radiocommunitapp.net.Receiver;
-import radio.crte.com.radiocommunitapp.net.Sendr;
+import radio.crte.com.radiocommunitapp.App;
+import radio.crte.com.radiocommunitapp.net.SendDataUtil;
 import radio.crte.com.radiocommunitapp.util.XNLDataUtil;
 
-public class Radio1Service extends Service {
-    private Socket socket = null;
-    private InputStream inputStream = null;
-    private OutputStream outputStream = null;
-    private Receiver receiver = null;
+public class RadioService extends Service {
+    SendDataUtil sendData = null;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -40,12 +31,15 @@ public class Radio1Service extends Service {
                 byte code = (byte) msg.obj;
                 switch (code) {
                     case XNLDataUtil.XNL_MASTER_STATUS_BRDCST: {
-                        Sendr.sendData(XNLDataUtil.getAuthRequest());
+                        sendData.sendData(XNLDataUtil.sendAuthRequest());
                         break;
                     }
                     case XNLDataUtil.XNL_DEVICE_AUTH_KEY_REPLY: {
-                        Sendr.sendData(XNLDataUtil.getConnRequest());
+                        sendData.sendData(XNLDataUtil.sendConnRequest());
                         break;
+                    }
+                    case XNLDataUtil.XNL_DATA_MSG: {
+                        sendData.sendData(XNLDataUtil.sendACKData());
                     }
                 }
             }
@@ -63,7 +57,7 @@ public class Radio1Service extends Service {
     }
 
     private void startConnect() {
-        Sendr.sendData(XNLDataUtil.getQueryData());
+
     }
 
     @Override
@@ -72,30 +66,16 @@ public class Radio1Service extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.crte.radio.RADIO_RE_CONNECT");
         registerReceiver(broadcastReceiver, filter);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
 
-                    socket = new Socket("192.168.2.173", 8002);
-                    inputStream = socket.getInputStream();
-                    outputStream = socket.getOutputStream();
-                    Sendr.outputStream = outputStream;
-
-                    receiver = new Receiver(inputStream, handler);
-                    receiver.start();
-//                    startConnect();
-                } catch (IOException e) {
-                    Log.e("test", "socket connect fail");
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        App.sendDataUtil = new SendDataUtil();
+        sendData = App.sendDataUtil;
+        sendData.initConnnect(handler, this);
     }
 
     @Override
     public void onDestroy() {
         unregisterReceiver(broadcastReceiver);
+        sendData.close();
         super.onDestroy();
     }
 

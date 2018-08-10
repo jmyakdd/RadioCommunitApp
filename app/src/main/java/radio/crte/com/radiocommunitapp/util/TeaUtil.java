@@ -7,120 +7,42 @@ package radio.crte.com.radiocommunitapp.util;
  * 加密解密轮数应为8的倍数，推荐加密轮数为64轮
  */
 public class TeaUtil {
-    public final static int[] KEY = new int[]{//加密解密所用的KEY
-            0xC3381C1D, 0x1C8B6323, 0x45B0FCA2, 0xC4CA75D3
+    public final static long[] KEY = new long[]{//加密解密所用的KEY
+            0x152C7E9DL, 0x38BE41C7L, 0x71E96CA4L, 0x6CAC1AFCL
     };
 
-    //加密
-    public static byte[] encrypt(byte[] content, int offset, int[] key, int times) {//times为加密轮数
-        int[] tempInt = byteToInt(content, offset);
-        int y = tempInt[0], z = tempInt[1], sum = 0, i;
-        int delta = 0x9e3779b9; //这是算法标准给的值
-        int a = key[0], b = key[1], c = key[2], d = key[3];
+    // 加密
+    public static byte[] encrypt(byte[] content, int offset, long[] key, int times) {//times为加密轮数
+        long y = bytesToUint4(content, offset);
+        long z = bytesToUint4(content, offset + 4);
+        long sum = 0, i;
+        long delta = 0x9E3779B9L; //这是算法标准给的值
+        long a = key[0], b = key[1], c = key[2], d = key[3];
 
         for (i = 0; i < times; i++) {
-
-            sum += delta;
-            y += ((z << 4) + a) ^ (z + sum) ^ ((z >> 5) + b);
-            z += ((y << 4) + c) ^ (y + sum) ^ ((y >> 5) + d);
-        }
-        tempInt[0] = y;
-        tempInt[1] = z;
-        return intToByte(tempInt, 0);
-    }
-
-    //解密
-    public static byte[] decrypt(byte[] encryptContent, int offset, int[] key, int times) {
-        int[] tempInt = byteToInt(encryptContent, offset);
-        int y = tempInt[0], z = tempInt[1], sum = 0, i;
-        int delta = 0x9e3779b9; //这是算法标准给的值
-        int a = key[0], b = key[1], c = key[2], d = key[3];
-        if (times == 32)
-            sum = 0xC6EF3720; /* delta << 5*/
-        else if (times == 16)
-            sum = 0xE3779B90; /* delta << 4*/
-        else
-            sum = delta * times;
-
-        for (i = 0; i < times; i++) {
-            z -= ((y << 4) + c) ^ (y + sum) ^ ((y >> 5) + d);
-            y -= ((z << 4) + a) ^ (z + sum) ^ ((z >> 5) + b);
-            sum -= delta;
-        }
-        tempInt[0] = y;
-        tempInt[1] = z;
-
-        return intToByte(tempInt, 0);
-    }
-
-    //byte[]型数据转成int[]型数据
-    private static int[] byteToInt(byte[] content, int offset) {
-
-        int[] result = new int[content.length >> 2];//除以2的n次方 == 右移n位 即 content.length / 4 == content.length >> 2
-        for (int i = 0, j = offset; j < content.length; i++, j += 4) {
-            result[i] = transform(content[j + 3]) | transform(content[j + 2]) << 8 |
-                    transform(content[j + 1]) << 16 | (int) content[j] << 24;
-        }
-        return result;
-
-    }
-
-    //int[]型数据转成byte[]型数据
-    private static byte[] intToByte(int[] content, int offset) {
-        byte[] result = new byte[content.length << 2];//乘以2的n次方 == 左移n位 即 content.length * 4 == content.length << 2
-        for (int i = 0, j = offset; j < result.length; i++, j += 4) {
-            result[j + 3] = (byte) (content[i] & 0xff);
-            result[j + 2] = (byte) ((content[i] >> 8) & 0xff);
-            result[j + 1] = (byte) ((content[i] >> 16) & 0xff);
-            result[j] = (byte) ((content[i] >> 24) & 0xff);
-        }
-        return result;
-    }
-
-    //若某字节为负数则需将其转成无符号正数
-    private static int transform(byte temp) {
-        int tempInt = (int) temp;
-        if (tempInt < 0) {
-            tempInt += 256;
-        }
-        return tempInt;
-    }
-
-    //通过TEA算法加密信息
-    public static byte[] encryptByTea(String info) {
-        byte[] temp = info.getBytes();
-        int n = 8 - temp.length % 8;//若temp的位数不足8的倍数,需要填充的位数
-        byte[] encryptStr = new byte[temp.length + n];
-        encryptStr[0] = (byte) n;
-        System.arraycopy(temp, 0, encryptStr, n, temp.length);
-        byte[] result = new byte[encryptStr.length];
-        for (int offset = 0; offset < result.length; offset += 8) {
-            byte[] tempEncrpt = TeaUtil.encrypt(encryptStr, offset, KEY, 32);
-            System.arraycopy(tempEncrpt, 0, result, offset, 8);
-        }
-        return result;
-    }
-
-    //通过TEA算法解密信息
-    public static String decryptByTea(byte[] secretInfo) {
-        byte[] decryptStr = null;
-        byte[] tempDecrypt = new byte[secretInfo.length];
-        for (int offset = 0; offset < secretInfo.length; offset += 8) {
-            decryptStr = TeaUtil.decrypt(secretInfo, offset, KEY, 32);
-            System.arraycopy(decryptStr, 0, tempDecrypt, offset, 8);
+            sum = (sum + delta) & 0xffffffffL;
+            y = (y + ((z << 4) + a ^ z + sum ^ (z >> 5) + b)) & 0xffffffffL;
+            z = (z + ((y << 4) + c ^ y + sum ^ (y >> 5) + d)) & 0xffffffffL;
         }
 
-        int n = tempDecrypt[0];
-        return new String(tempDecrypt, n, decryptStr.length - n);
+        byte[] ret = new byte[8];
 
+        uint4ToByte(y, ret, 0);
+        uint4ToByte(z, ret, 4);
+        return ret;
     }
 
-    public static void main(String[] args) {
-        byte[] data = new byte[]{(byte) 0x8f, 0x1f, (byte) 0xA4, 0x72, (byte) 0xaa, 0x01, 0x66, 0x63};
-        System.out.println(DataConvert.byteToHexString(data));
-        byte[] data1 = encrypt(data,0,KEY,32);
-        System.out.println(DataConvert.byteToHexString(data1));
-        System.out.println(DataConvert.byteToHexString(decrypt(data1,0,KEY,32)));
+    public static long bytesToUint4(byte arr[], int offset) {
+        return ((long) (arr[0 + offset] & 0xFF) << 24) + ((long) (arr[1 + offset] & 0xFF) << 16)
+                + ((long) (arr[2 + offset] & 0xFF) << 8) + ((long) (arr[3 + offset] & 0xFF));
+    }
+
+    public static void uint4ToByte(long content, byte arr[], int offset) {
+        arr[offset + 3] = (byte) (content & 0xff);
+        arr[offset + 2] = (byte) ((content >> 8) & 0xff);
+        arr[offset + 1] = (byte) ((content >> 16) & 0xff);
+        arr[offset] = (byte) ((content >> 24) & 0xff);
+
     }
 
 }
