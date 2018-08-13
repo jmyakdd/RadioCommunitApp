@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
+import radio.crte.com.radiocommunitapp.App;
 import radio.crte.com.radiocommunitapp.MainActivity;
 import radio.crte.com.radiocommunitapp.util.BroadCastSendUtil;
 import radio.crte.com.radiocommunitapp.util.DataConvert;
@@ -102,17 +103,41 @@ public class Receiver extends Thread {
 
     private static final int REPLY_GET_RADIO_INFO = 0x800e;
     private static final int REPLY_TEXT = 0xb401;
+    private static final int Broadcast_Physical_User_Input  = 0xb405;
 
     private void analyticaXcmplData(byte[] data) {
         /*byte[] length = new byte[]{data[10],data[11]};
         int l = DataConvert.byteToInt(length);*/
         int code = DataConvert.byteToInt(data, 12, 2);
+        if(data[14]!=0x00){
+            Log.e("error","xcmp request fali:"+data[14]);
+            return;
+        }
         switch (code) {
             case REPLY_GET_RADIO_INFO:
                 Log.e("receive", "response");
+                analyticalRadioStatusData(data);
                 break;
             case REPLY_TEXT:
+                break;
+            case Broadcast_Physical_User_Input:
+                break;
+        }
+    }
 
+    private void analyticalRadioStatusData(byte[] data) {
+        switch (data[15]){
+            case 0x02://rssi
+                break;
+            case 0x07://product model number
+                break;
+            case 0x08://product serial number
+                break;
+            case 0x0d://Signaling
+                break;
+            case 0x0e://read radio id
+                App.Companion.setRadioId(DataConvert.byteToInt(data,16,4));
+                Log.e("test","radio id = "+App.Companion.getRadioId());
                 break;
         }
     }

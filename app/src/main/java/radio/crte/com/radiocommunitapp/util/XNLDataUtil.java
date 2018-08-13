@@ -2,6 +2,9 @@ package radio.crte.com.radiocommunitapp.util;
 
 import android.util.Log;
 
+/**
+ * 协议封装类
+ */
 public class XNLDataUtil {
     //control
     public final static byte XNL_MASTER_STATUS_BRDCST = 0x02;
@@ -29,6 +32,14 @@ public class XNLDataUtil {
 
     public static byte[] authData = new byte[8];
 
+    /**
+     * xnl命令封装
+     *
+     * @param xnlopcode
+     * @param xnlData
+     * @param dataLength
+     * @return
+     */
     private static byte[] packetXnlData(byte xnlopcode, byte[] xnlData, int dataLength) {
         byte[] data = new byte[dataLength];
         byte[] xnlDataLength = DataConvert.intTo2byte(dataLength - 2);
@@ -75,6 +86,12 @@ public class XNLDataUtil {
         return data;
     }
 
+    /**
+     * xcmp命令封装
+     *
+     * @param xcmpData
+     * @return
+     */
     private static byte[] packetXcmpData(byte[] xcmpData) {
         byte[] data = new byte[14 + xcmpData.length];
         byte[] xnlDataLength = DataConvert.intTo2byte(12 + xcmpData.length);
@@ -124,19 +141,32 @@ public class XNLDataUtil {
         }
     }
 
-    //开始连接
+    /**
+     * 开始连接
+     *
+     * @return
+     */
     public static byte[] sendQueryData() {
         transaction = new byte[2];
         flag = 0x00;
         return packetXnlData(XNL_DEVICE_MASTER_QUERY, null, 14);
     }
 
-    //请求身份密钥
+    /**
+     * 请求身份密钥
+     *
+     * @return
+     */
     public static byte[] sendAuthRequest() {
         return packetXnlData(XNL_DEVICE_AUTH_KEY_REQUEST, null, 14);
     }
 
-    //请求建立连接
+
+    /**
+     * 请求建立连接
+     *
+     * @return
+     */
     public static byte[] sendConnRequest() {
         byte[] xnlData = new byte[12];
         xnlData[0] = 0x00;
@@ -147,6 +177,16 @@ public class XNLDataUtil {
         return packetXnlData(XNL_DEVICE_CONN_REQUEST, xnlData, 26);
     }
 
+    public static final byte TONE_FUN_STOP = 0x00;
+    public static final byte TONE_FUN_START = 0x01;
+    public static final byte TONE_FUN_DISABLE = 0x02;
+    public static final byte TONE_FUN_ENABLE = 0x03;
+
+    /**
+     * _409
+     *
+     * @return
+     */
     public static byte[] sendTipVoice() {
         byte[] data = new byte[10];
         data[0] = 0x04;
@@ -154,22 +194,27 @@ public class XNLDataUtil {
         return packetXcmpData(data);
     }
 
-    public static byte[] sendGetBaseInfo() {
+    public static final byte BASE_INFO_RSSI = 0x02;
+    public static final byte BASE_INFO_MODEL_NUMBER = 0x07;
+    public static final byte BASE_INFO_SERIAL_NUMBER = 0x08;
+    public static final byte BASE_INFO_SIGNALING = 0x0d;
+    public static final byte BASE_INFO_RADIO_ID= 0x0e;
+    /**
+     * _00e
+     */
+    public static byte[] sendGetBaseInfo(byte condition) {
         byte[] data = new byte[3];
         data[0] = 0x00;
         data[1] = 0x0e;
-        data[2] = 0x02;
+        data[2] = condition;
         return packetXcmpData(data);
     }
 
-    public static byte[] sentGetSignaling(){
-        byte[] data = new byte[3];
-        data[0] = 0x00;
-        data[1] = 0x0e;
-        data[2] = 0x0d;
-        return packetXcmpData(data);
-    }
-
+    /**
+     * 发送确认信息
+     *
+     * @return
+     */
     public static byte[] sendACKData() {
         return packetXnlData(XNL_DATA_MSG_ACK, null, 14);
     }
