@@ -34,7 +34,7 @@ public class SendDataUtil {
                     App.receiver = new Receiver(inputStream, handler, context);
                     App.receiver.start();
                 } catch (IOException e) {
-                    Log.e("test", "socket connect fail");
+                    Log.e("test", "socket connect fail"+e.toString());
                 }
             }
         });

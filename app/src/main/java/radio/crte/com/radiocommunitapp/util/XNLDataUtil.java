@@ -182,6 +182,13 @@ public class XNLDataUtil {
     public static final byte TONE_FUN_DISABLE = 0x02;
     public static final byte TONE_FUN_ENABLE = 0x03;
 
+    public static final int TONE_IDENTIFIER_NONE = 0x0000;
+    public static final int TONE_IDENTIFIER_START_TALKING = 0x0003;
+    public static final int TONE_IDENTIFIER_GOOD_KEY = 0x0005;
+    public static final int TONE_IDENTIFIER_BAD_KEY = 0x0006;
+    public static final int TONE_IDENTIFIER_PRIORITY_BEEP = 0x000C;
+    public static final int TONE_IDENTIFIER_POWER_UP_BEEP = 0x000D;
+
     /**
      * _409
      *
@@ -198,7 +205,9 @@ public class XNLDataUtil {
     public static final byte BASE_INFO_MODEL_NUMBER = 0x07;
     public static final byte BASE_INFO_SERIAL_NUMBER = 0x08;
     public static final byte BASE_INFO_SIGNALING = 0x0d;
-    public static final byte BASE_INFO_RADIO_ID= 0x0e;
+    public static final byte BASE_INFO_RADIO_ID = 0x0e;
+    public static final byte BASE_INFO_BLUETOOTH = 0x24;
+
     /**
      * _00e
      */
@@ -207,6 +216,46 @@ public class XNLDataUtil {
         data[0] = 0x00;
         data[1] = 0x0e;
         data[2] = condition;
+        return packetXcmpData(data);
+    }
+
+    public static final byte VERSION_INFO_HOST_SOFTWARE = 0x00;
+    public static final byte VERSION_INFO_DSP = 0x010;
+    public static final byte VERSION_INFO_REGIONAL_INFORMATION = 0x47;
+    public static final byte VERSION_INFO_RF_BAND = 0x63;
+    public static final byte VERSION_INFO_POWER_LEVEL = 0x65;
+    public static final byte VERSION_INFO_FLASH_SIZE = 0x6D;
+
+    public static byte[] sendGetVersionInfo(byte type) {
+        byte[] data = new byte[3];
+        data[0] = 0x00;
+        data[1] = 0x0f;
+        data[2] = type;
+        return packetXcmpData(data);
+    }
+
+    public static byte[] sendGPSStatus() {
+        byte[] data = new byte[8];
+        data[0] = 0x04;
+        data[1] = 0x4b;
+        data[2] = 0x00;
+        data[3] = 0x00;
+        data[4] = 0x04;
+        data[5] = 0x00;
+        data[6] = 0x01;
+        data[7] = 0x00;
+        return packetXcmpData(data);
+    }
+
+    public static byte[] getChannelInfo() {
+        byte[] data = new byte[7];
+        data[0] = 0x04;
+        data[1] = 0x0d;
+        data[2] = (byte) 0x81;
+        data[3] = 0x00;
+        data[4] = 0x00;
+        data[5] = 0x00;
+        data[6] = 0x00;
         return packetXcmpData(data);
     }
 

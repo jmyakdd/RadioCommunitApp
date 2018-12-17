@@ -104,6 +104,7 @@ public class Receiver extends Thread {
     private static final int REPLY_GET_RADIO_INFO = 0x800e;
     private static final int REPLY_TEXT = 0xb401;
     private static final int Broadcast_Physical_User_Input  = 0xb405;
+    private static final int Broadcast_TRANSMIT_CONTROL  = 0xb415;
 
     private void analyticaXcmplData(byte[] data) {
         /*byte[] length = new byte[]{data[10],data[11]};
@@ -121,6 +122,22 @@ public class Receiver extends Thread {
             case REPLY_TEXT:
                 break;
             case Broadcast_Physical_User_Input:
+                break;
+            case Broadcast_TRANSMIT_CONTROL:
+                analyticalPPTData(data);
+                break;
+        }
+    }
+
+    private void analyticalPPTData(byte[] data) {
+        switch (data[14]){
+            case 0x00:
+                break;
+            case 0x02:
+                break;
+            case 0x03:
+                break;
+            case (byte) 0xFF:
                 break;
         }
     }
